@@ -74,6 +74,29 @@ export default function Insert() {
     }
   }
 
+  if (!user) {
+    return (
+      <div className="about_content shadow">
+        <h2>관리자 로그인</h2>
+        <div className="contact_form">
+          <form action="">
+            <p className="field">
+              <label htmlFor="email">이메일</label>
+              <input type="email" id="email" name="email" placeholder="email" required />
+            </p>
+            <p className="field">
+              <label htmlFor="password">비밀번호</label>
+              <input type="password" id="password" name="password" placeholder="password" required />
+            </p>
+            <p className="submit">
+              <input type="submit" className="primary-btn" value="로그인" />
+            </p>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="about_content shadow">
       <h2 className="mb-3">데이터 입력</h2>
