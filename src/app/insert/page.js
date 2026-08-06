@@ -1,14 +1,14 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Insert() {
   const supabase = createClient();
   const router = useRouter();
 
-  const [formData, setformData] = useState({
+  const [formData, setFormData] = useState({
     title: "",
     content: "",
     url: "",
@@ -21,7 +21,23 @@ export default function Insert() {
     thumbnail: "",
   });
 
-  async function inserData(e) {
+  const [thumbnail, setThumbnail] = useState(null);
+  const [user, setUser] = useState(null);
+  const [authForm, setAuthform] = useState({
+    email: "",
+    password: "",
+  });
+
+  useEffect(() => {
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    })();
+  }, [supabase.auth]);
+
+  async function insertData(e) {
     e.preventDefault();
     const { error } = await supabase.from("portfolio").insert(formData);
     if (error) {
@@ -30,20 +46,39 @@ export default function Insert() {
       console.log("데이터 입력 성공");
       router.push("/");
     }
+    if (thumbnail) {
+      await uploadThumbnail(thumbnail);
+    }
   }
+
   const handleChange = e => {
     const { name, value } = e.target;
-    setformData({
+
+    setFormData({
       ...formData,
       [name]: value,
     });
   };
+  const handleFileChange = e => {
+    setThumbnail(e.target.files[0]);
+  };
+
+  async function uploadThumbnail(file) {
+    const { data, error } = await supabase.storage.from("portfolio").upload(`thumbnail/${file.name}`, file);
+    if (error) {
+      // Handle error
+      console.error("파일 업로드 실패:", error);
+    } else {
+      // Handle success
+      console.log("파일 업로드 성공:");
+    }
+  }
 
   return (
     <div className="about_content shadow">
       <h2 className="mb-3">데이터 입력</h2>
       <div className="contact_form">
-        <form onSubmit={inserData}>
+        <form onSubmit={insertData}>
           <p className="field">
             <label htmlFor="title">프로젝트 이름:</label>
             <input type="text" id="title" name="title" placeholder="프로젝트 이름" required onChange={handleChange} />
@@ -84,7 +119,7 @@ export default function Insert() {
             <input type="fiile" id="rep1_img" name="rep1_img" accept="image/*" />
           </p>
           <p className="field">
-            <label htmlFor="rep1_desc">대표 이미지 1 설명:</label>
+            <label htmlFor="rep1_desc">대표 이미지 1 설명</label>
             <input type="text" id="rep1_desc" name="rep1_desc" onChange={handleChange} />
           </p>
           <p className="field">
@@ -92,12 +127,12 @@ export default function Insert() {
             <input type="fiile" id="rep2_img" name="rep2_img" accept="image/*" />
           </p>
           <p className="field">
-            <label htmlFor="rep2_desc">대표 이미지 2 설명:</label>
+            <label htmlFor="rep2_desc">대표 이미지 2 설명</label>
             <input type="text" id="rep2_desc" name="rep2_desc" onChange={handleChange} />
           </p>
           <p className="field">
             <label htmlFor="thumbnail">썸네일:</label>
-            <input type="file" id="thumbnail" name="thumbnail" accept="image/*" />
+            <input type="file" id="thumbnail" name="thumbnail" accept="image/*" onChange={handleFileChange} />
           </p>
           <p className="submit">
             <input type="submit" className="primary-btn" value="등록" />
